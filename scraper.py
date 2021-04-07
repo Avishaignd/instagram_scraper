@@ -45,7 +45,7 @@ class Scraper:
         except:
             return
 
-    def scroll_page(self, driver, timeout):
+    def scroll_page(self, driver, timeout, number):
         '''
         Scrolling the page and parsing it, the function scrapes all posts until it reaches the desired amount.
         The function takes a few seconds between every scroll to make sure the page is loaded.
@@ -61,12 +61,11 @@ class Scraper:
             script = body.find('script', text=lambda t: t.startswith('window._sharedData'))
             page_json = script.string.split('=', 1)[1].rstrip(';')
             data = json.loads(page_json)
-            for link in data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']['edges']:
-                while len(self.links) <= 20:  
+            while len(self.links) <= number:  
+                for link in data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']['edges']:
                     self.links.append(link)
-                    if len(self.links) == 20:
-                        self.is_full = True
-                        break
+            else:
+                self.is_full = True
 
         # Wait to load page
             time.sleep(scroll_pause_time)
@@ -79,13 +78,13 @@ class Scraper:
             last_height = new_height
 
 
-    def get_data(self, username):
+    def get_data(self, username, number):
         '''
-        In this function we pass the desired instagram username to scrape, execute the login and scrolling function,
-        and organize the data.
+        In this function we pass the desired instagram username to scrape, amount of posts we want scraped,
+        the timeout before each scroll (I use 5 as a default), execute the login and scrolling function, and organize the data.
         '''
         self.login(username)
-        self.scroll_page(browser, 5)
+        self.scroll_page(browser, 5, number)
         for item in self.links:
             post_dict = {
             'type': '',
@@ -121,5 +120,6 @@ class Scraper:
             post_dict['all-engagement'] = post_dict['comments'] + post_dict['likes'] + post_dict['views']
             self.all_posts.append(post_dict)
             print(self.all_posts)
-            print(len(self.all_posts))
+        
+        print(len(self.all_posts))
         browser.close()
