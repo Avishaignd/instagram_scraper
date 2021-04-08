@@ -45,7 +45,7 @@ class Scraper:
         except:
             return
 
-    def scroll_page(self, driver, timeout, number):
+    def scroll_page(self, driver, timeout, posts_to_scrape):
         '''
         Scrolling the page and parsing it, the function scrapes all posts until it reaches the desired amount.
         The function takes a few seconds between every scroll to make sure the page is loaded.
@@ -61,7 +61,7 @@ class Scraper:
             script = body.find('script', text=lambda t: t.startswith('window._sharedData'))
             page_json = script.string.split('=', 1)[1].rstrip(';')
             data = json.loads(page_json)
-            while len(self.links) <= number:  
+            while len(self.links) <= posts_to_scrape:  
                 for link in data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']['edges']:
                     self.links.append(link)
             else:
@@ -70,21 +70,21 @@ class Scraper:
         # Wait to load page
             time.sleep(scroll_pause_time)
 
-        # Calculate new scroll height and compare with last scroll height, also check if there are enough posts
+        # Calculate new scroll height and compare with last scroll height
             new_height = driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height or self.is_full == True:
-            # If heights are the same it will exit the function
+            # If heights are the same or enough posts were collected it will exit the function
                 break
             last_height = new_height
 
 
-    def get_data(self, username, number):
+    def get_data(self, username, posts_to_scrape):
         '''
         In this function we pass the desired instagram username to scrape, amount of posts we want scraped,
         the timeout before each scroll (I use 5 as a default), execute the login and scrolling function, and organize the data.
         '''
         self.login(username)
-        self.scroll_page(browser, 5, number)
+        self.scroll_page(browser, 5, posts_to_scrape)
         for item in self.links:
             post_dict = {
             'type': '',
