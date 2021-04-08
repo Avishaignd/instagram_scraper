@@ -9,9 +9,6 @@ import pandas as pd, numpy as np
 import ast
 from datetime import datetime
 
-# email = 'avishaignd@gmail.com' # logging user email
-# password = '1pass4instagram' # logging user password
-# username='avishaignd' # user to scrape
 browser = webdriver.Chrome()
 
 
@@ -48,7 +45,7 @@ class Scraper:
     def scroll_page(self, driver, timeout, posts_to_scrape):
         '''
         Scrolling the page and parsing it, the function scrapes all posts until it reaches the desired amount.
-        The function takes a few seconds between every scroll to make sure the page is loaded.
+        The function takes a few seconds between every scroll to make sure the page is fully loaded.
         '''
         scroll_pause_time = timeout
         last_height = driver.execute_script("return document.body.scrollHeight")
